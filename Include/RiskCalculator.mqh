@@ -14,6 +14,8 @@ private:
    double            m_baseAtr;          // Base ATR value for adaptive sizing
    int               m_baseAtrPeriod;    // Period for base ATR calculation
    int               m_atrPeriod;        // Current ATR period
+   int               m_baseAtrHandle;    // Handle for base ATR indicator
+   int               m_atrHandle;        // Handle for current ATR indicator
 
 public:
    // Constructor
@@ -24,10 +26,18 @@ public:
       m_baseAtr = 0.0;
       m_baseAtrPeriod = 50;
       m_atrPeriod = 14;
+      m_baseAtrHandle = INVALID_HANDLE;
+      m_atrHandle = INVALID_HANDLE;
    }
    
    // Destructor
-   ~CRiskCalculator() { }
+   ~CRiskCalculator() 
+   { 
+      if(m_baseAtrHandle != INVALID_HANDLE)
+         IndicatorRelease(m_baseAtrHandle);
+      if(m_atrHandle != INVALID_HANDLE)
+         IndicatorRelease(m_atrHandle);
+   }
    
    // Initialization
    bool Init(double riskPercent, bool useAtrAdaptive, int atrPeriod = 14, int baseAtrPeriod = 50)
@@ -39,12 +49,29 @@ public:
       
       if(m_useAtrAdaptive)
       {
-         // Calculate base ATR on initialization
-         m_baseAtr = iATR(_Symbol, PERIOD_CURRENT, m_baseAtrPeriod, 0);
+         // Create ATR indicator handles
+         m_baseAtrHandle = iATR(_Symbol, PERIOD_CURRENT, m_baseAtrPeriod);
+         m_atrHandle = iATR(_Symbol, PERIOD_CURRENT, m_atrPeriod);
          
+         if(m_baseAtrHandle == INVALID_HANDLE || m_atrHandle == INVALID_HANDLE)
+         {
+            Print("Error: Unable to create ATR indicator handles");
+            return false;
+         }
+         
+         // Get base ATR value on initialization
+         double atrBuffer[];
+         ArraySetAsSeries(atrBuffer, true);
+         if(CopyBuffer(m_baseAtrHandle, 0, 0, 1, atrBuffer) <= 0)
+         {
+            Print("Error: Unable to copy base ATR data");
+            return false;
+         }
+         
+         m_baseAtr = atrBuffer[0];
          if(m_baseAtr == 0)
          {
-            Print("Error: Unable to calculate base ATR");
+            Print("Error: Base ATR value is zero");
             return false;
          }
       }
@@ -80,13 +107,18 @@ public:
       double lotSize = NormalizeDouble(riskAmount / (stopLossDistance * tickValue), 2);
       
       // Apply ATR adaptation if enabled
-      if(m_useAtrAdaptive && m_baseAtr > 0)
+      if(m_useAtrAdaptive && m_baseAtr > 0 && m_atrHandle != INVALID_HANDLE)
       {
-         double currentAtr = iATR(_Symbol, PERIOD_CURRENT, m_atrPeriod, 0);
-         if(currentAtr > 0)
+         double atrBuffer[];
+         ArraySetAsSeries(atrBuffer, true);
+         if(CopyBuffer(m_atrHandle, 0, 0, 1, atrBuffer) > 0)
          {
-            double atrRatio = m_baseAtr / currentAtr;
-            lotSize = NormalizeDouble(lotSize * atrRatio, 2);
+            double currentAtr = atrBuffer[0];
+            if(currentAtr > 0)
+            {
+               double atrRatio = m_baseAtr / currentAtr;
+               lotSize = NormalizeDouble(lotSize * atrRatio, 2);
+            }
          }
       }
       
@@ -134,12 +166,17 @@ public:
    // Update base ATR value
    void UpdateBaseAtr()
    {
-      if(m_useAtrAdaptive)
+      if(m_useAtrAdaptive && m_baseAtrHandle != INVALID_HANDLE)
       {
-         double newBaseAtr = iATR(_Symbol, PERIOD_CURRENT, m_baseAtrPeriod, 0);
-         if(newBaseAtr > 0)
+         double atrBuffer[];
+         ArraySetAsSeries(atrBuffer, true);
+         if(CopyBuffer(m_baseAtrHandle, 0, 0, 1, atrBuffer) > 0)
          {
-            m_baseAtr = newBaseAtr;
+            double newBaseAtr = atrBuffer[0];
+            if(newBaseAtr > 0)
+            {
+               m_baseAtr = newBaseAtr;
+            }
          }
       }
    }
@@ -147,6 +184,16 @@ public:
    // Deinitialize
    void Deinit()
    {
-      // Nothing to clean up
+      if(m_baseAtrHandle != INVALID_HANDLE)
+      {
+         IndicatorRelease(m_baseAtrHandle);
+         m_baseAtrHandle = INVALID_HANDLE;
+      }
+      
+      if(m_atrHandle != INVALID_HANDLE)
+      {
+         IndicatorRelease(m_atrHandle);
+         m_atrHandle = INVALID_HANDLE;
+      }
    }
 };

@@ -107,7 +107,7 @@ private:
       if(index < 0 || index >= ArraySize(m_positions))
          return false;
          
-      PartialCloseInfo &pos = m_positions[index];
+      PartialCloseInfo pos = m_positions[index];
       
       // Check if we need to do partial close at TP1
       if(!pos.tp1_triggered && 
@@ -124,7 +124,7 @@ private:
          // Execute partial close
          if(m_trade.PositionClosePartial(pos.ticket, tp1Volume))
          {
-            pos.tp1_triggered = true;
+            m_positions[index].tp1_triggered = true;
             Print("TP1 triggered for position #", pos.ticket, " - Closed ", tp1Volume, " lots");
             return true;
          }
@@ -145,7 +145,7 @@ private:
          // Execute partial close
          if(m_trade.PositionClosePartial(pos.ticket, tp2Volume))
          {
-            pos.tp2_triggered = true;
+            m_positions[index].tp2_triggered = true;
             Print("TP2 triggered for position #", pos.ticket, " - Closed ", tp2Volume, " lots");
             return true;
          }
@@ -159,7 +159,7 @@ private:
          // At TP3, close the entire remaining position
          if(m_trade.PositionClose(pos.ticket))
          {
-            pos.tp3_triggered = true;
+            m_positions[index].tp3_triggered = true;
             Print("TP3 triggered for position #", pos.ticket, " - Closed remaining position");
             return true;
          }
@@ -293,7 +293,7 @@ public:
    {
       // Process position add events for our EA
       if(trans.type == TRADE_TRANSACTION_DEAL_ADD && 
-         trans.deal_type == DEAL_TYPE_BUY || trans.deal_type == DEAL_TYPE_SELL)
+         ((trans.deal_type == DEAL_TYPE_BUY) || (trans.deal_type == DEAL_TYPE_SELL)))
       {
          // Check if this is one of our deals
          ulong dealTicket = trans.deal;
@@ -309,7 +309,7 @@ public:
       
       // Process position removal (fully closed)
       if(trans.type == TRADE_TRANSACTION_DEAL_ADD && 
-         trans.deal_type == DEAL_TYPE_BUY || trans.deal_type == DEAL_TYPE_SELL)
+         ((trans.deal_type == DEAL_TYPE_BUY) || (trans.deal_type == DEAL_TYPE_SELL)))
       {
          ulong dealTicket = trans.deal;
          if(dealTicket == 0)
