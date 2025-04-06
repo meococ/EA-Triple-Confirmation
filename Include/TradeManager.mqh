@@ -7,31 +7,10 @@
 #property link      "https://yoursite.com"
 
 #include <Trade\Trade.mqh>
+#include "CommonDefinitions.mqh"
 
 // Định nghĩa enum trực tiếp trong file này
-enum ENUM_TRADE_DIRECTION
-{
-   TRADE_DIRECTION_NONE, // Không xác định
-   TRADE_DIRECTION_BUY,  // Mua
-   TRADE_DIRECTION_SELL  // Bán
-};
-
-enum ENUM_SETUP_QUALITY
-{
-   SETUP_QUALITY_NONE,    // Không xác định
-   SETUP_QUALITY_B,       // Chất lượng B
-   SETUP_QUALITY_A,       // Chất lượng A
-   SETUP_QUALITY_A_PLUS   // Chất lượng A+
-};
-
-enum ENUM_MARKET_CONDITION
-{
-   MARKET_CONDITION_UNDEFINED,  // Chưa xác định
-   MARKET_CONDITION_TRENDING,   // Xu hướng rõ ràng
-   MARKET_CONDITION_RANGING,    // Đi ngang, sideway
-   MARKET_CONDITION_VOLATILE,   // Biến động mạnh
-   MARKET_CONDITION_TRANSITION  // Chuyển tiếp
-};
+// REMOVED DUPLICATE ENUMS - Using CommonDefinitions.mqh instead
 
 class CTradeManager
 {
