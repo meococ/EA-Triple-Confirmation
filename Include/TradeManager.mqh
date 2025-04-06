@@ -8,27 +8,29 @@
 
 #include <Trade\Trade.mqh>
 
+// Định nghĩa enum trực tiếp trong file này
 enum ENUM_TRADE_DIRECTION
 {
-   TRADE_DIRECTION_BUY,
-   TRADE_DIRECTION_SELL
+   TRADE_DIRECTION_NONE, // Không xác định
+   TRADE_DIRECTION_BUY,  // Mua
+   TRADE_DIRECTION_SELL  // Bán
 };
 
 enum ENUM_SETUP_QUALITY
 {
-   SETUP_QUALITY_NONE,
-   SETUP_QUALITY_B,
-   SETUP_QUALITY_A,
-   SETUP_QUALITY_A_PLUS
+   SETUP_QUALITY_NONE,    // Không xác định
+   SETUP_QUALITY_B,       // Chất lượng B
+   SETUP_QUALITY_A,       // Chất lượng A
+   SETUP_QUALITY_A_PLUS   // Chất lượng A+
 };
 
 enum ENUM_MARKET_CONDITION
 {
-   MARKET_CONDITION_UNDEFINED,
-   MARKET_CONDITION_TRENDING,
-   MARKET_CONDITION_RANGING,
-   MARKET_CONDITION_VOLATILE,
-   MARKET_CONDITION_TRANSITION
+   MARKET_CONDITION_UNDEFINED,  // Chưa xác định
+   MARKET_CONDITION_TRENDING,   // Xu hướng rõ ràng
+   MARKET_CONDITION_RANGING,    // Đi ngang, sideway
+   MARKET_CONDITION_VOLATILE,   // Biến động mạnh
+   MARKET_CONDITION_TRANSITION  // Chuyển tiếp
 };
 
 class CTradeManager
